@@ -24,18 +24,18 @@ mkdir -p ${DIRMONAN}/tar
 
 
 echo -e  "${GREEN}==>${NC} Copying and decompressing testcase data... \n"
-#tar -xzf ${DIRDADOS}/MONAN_testcase.v1.0.tgz -C ${DIRroot}
+tar -xzf ${DIRDADOS}/MONAN_testcase.v1.0.tgz -C ${DIRroot}
 
 echo -e  "${GREEN}==>${NC} Copyings scripts from MONAN_ori to MONAN testcase script folders... \n"
-#cp -rf ${DIRMONAN_ORI}/testcase/scripts/* ${DIRMONAN}/testcase/scripts/
+cp -rf ${DIRMONAN_ORI}/testcase/scripts/* ${DIRMONAN}/testcase/scripts/
 
 echo -e  "${GREEN}==>${NC} Copying and decompressing all data for preprocessing... \n"
 echo -e  "${GREEN}==>${NC} It may take several minutes...\n"
-#tar -xzf ${DIRDADOS}/MONAN_data_v1.0.tgz -C ${DIRMONAN}
+tar -xzf ${DIRDADOS}/MONAN_data_v1.0.tgz -C ${DIRMONAN}
 
 echo -e  "${GREEN}==>${NC} Creating make_static.sh for submiting init_atmosphere...\n"
 cd ${DIRMONAN}/testcase/scripts
-#${DIRMONAN}/testcase/scripts/static.sh GFS 1024002
+${DIRMONAN}/testcase/scripts/static.sh GFS 1024002
 
 
 
