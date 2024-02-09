@@ -37,10 +37,6 @@ cat << EOF > ${SPACK_GIT}/${SPACK_NAME}/env.sh
 #!/bin/bash
 
 source ../MPASSIT/modulefiles/build.egeon.intel
-#module purge
-#module load ohpc
-#module load python-3.9.13-gcc-9.4.0-moxjnc6
-#module load cmake/3.21.3
 module list
 
 . ${SPACK_GIT}/${SPACK_NAME}/share/spack/setup-env.sh

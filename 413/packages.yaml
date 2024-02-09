@@ -1,0 +1,13 @@
+packages:
+  intel-oneapi-mpi:
+    externals:
+    - spec: intel-oneapi-mpi@2021.4.0
+      prefix: /opt/intel/oneapi        
+  perl:
+    externals:
+    - spec: perl@5.26.3~cpanm+opcode+open+shared+threads
+      prefix: /usr
+  cmake:
+    externals:
+    - spec: cmake@3.21.3
+      prefix: /opt/ohpc/pub/utils/cmake/3.21.3

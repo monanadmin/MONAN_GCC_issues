@@ -28,23 +28,10 @@ compilers:
 - compiler:
     spec: intel@=2021.4.0
     paths:
-      cc: /opt/intel/oneapi/compiler/2021.4.0/linux/bin/intel64/icc
-      cxx: /opt/intel/oneapi/compiler/2021.4.0/linux/bin/intel64/icpc
-      f77: /opt/intel/oneapi/compiler/2021.4.0/linux/bin/intel64/ifort
-      fc: /opt/intel/oneapi/compiler/2021.4.0/linux/bin/intel64/ifort
-    flags: {}
-    operating_system: rhel8
-    target: x86_64
-    modules: []
-    environment: {}
-    extra_rpaths: []
-- compiler:
-    spec: oneapi@=2021.4.0
-    paths:
-      cc: /opt/intel/oneapi/compiler/2021.4.0/linux/bin/icx
-      cxx: /opt/intel/oneapi/compiler/2021.4.0/linux/bin/icpx
-      f77: /opt/intel/oneapi/compiler/2021.4.0/linux/bin/ifx
-      fc: /opt/intel/oneapi/compiler/2021.4.0/linux/bin/ifx
+      cc: mpiicc
+      cxx: mpiicpc
+      f77: mpiifort
+      fc: mpiifort
     flags: {}
     operating_system: rhel8
     target: x86_64
