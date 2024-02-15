@@ -17,7 +17,7 @@ export SPACK_ENV=${SPACK_GIT}/.spack/${SPACK_NAME}
 
 GREEN='\033[1;32m'       # Green
 NC='\033[0m' # No Color
-SPACK_VER="0.21.1"
+SPACK_VER="0.19.2"
 
 cd ${SPACK_GIT}
 echo ""
@@ -51,6 +51,5 @@ EOF
 chmod a+x ${SPACK_GIT}/${SPACK_NAME}/env.sh
 
 
-echo ""
-echo -e  "${GREEN}==>${NC} Please source spack_mpassit/env.sh before continue... \n"
+echo -e  "${GREEN}==>${NC} Spack configured \n"
 

@@ -1,12 +1,12 @@
 packages:
+  perl:
+    externals:
+    - spec: perl@5.26.3~cpanm+shared+threads
+      prefix: /usr
   intel-oneapi-mpi:
     externals:
     - spec: intel-oneapi-mpi@2021.4.0
-      prefix: /opt/intel/oneapi        
-  perl:
-    externals:
-    - spec: perl@5.26.3~cpanm+opcode+open+shared+threads
-      prefix: /usr
+      prefix: /opt/intel/oneapi
   cmake:
     externals:
     - spec: cmake@3.21.3

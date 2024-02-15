@@ -1,6 +1,6 @@
 compilers:
 - compiler:
-    spec: dpcpp@=2021.4.0
+    spec: dpcpp@2021.4.0
     paths:
       cc: /opt/intel/oneapi/compiler/2021.4.0/linux/bin/icx
       cxx: /opt/intel/oneapi/compiler/2021.4.0/linux/bin/dpcpp
@@ -13,7 +13,7 @@ compilers:
     environment: {}
     extra_rpaths: []
 - compiler:
-    spec: gcc@=8.5.0
+    spec: gcc@8.5.0
     paths:
       cc: /usr/bin/gcc
       cxx: /usr/bin/g++
@@ -26,7 +26,7 @@ compilers:
     environment: {}
     extra_rpaths: []
 - compiler:
-    spec: intel@=2021.4.0
+    spec: intel@2021.4.0
     paths:
       cc: mpiicc
       cxx: mpiicpc
