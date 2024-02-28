@@ -22,139 +22,187 @@ ToDo:
 
 from netCDF4 import Dataset
 from scipy.interpolate import interp1d
+
 import sys
 import numpy as np
 
-
-if len(sys.argv) < 2 or len(sys.argv) > 3:
-    print('')
-    print('Usage: isobaric_interp.py <input filename> [output filename]')
-    print('')
-    print('       Where <input filename> is the name of an MPAS-Atmosphere netCDF file')
-    print('       containing a 3-d pressure field as well as all 3-d fields to be vertically')
-    print('       interpolated to isobaric levels, and [output filename] optionally names')
-    print('       the output file to be written with vertically interpolated fields.')
-    print('')
-    print('       If an output filename is not given, interpolated fields will be written')
-    print('       to a file named isobaric.nc.')
-    print('')
-    exit()
-
-filename = sys.argv[1]
-if len(sys.argv) == 3:
-    outfile = sys.argv[2]
-else:
-    outfile = 'isobaric.nc'
+from numba import jit, prange
 
 
-#
-# Set list of isobaric levels (in hPa)
-#
-levs_hPa = [ 1000.0, 975.0, 950.0, 925.0, 900.0,
-              850.0, 800.0, 750.0, 700.0, 650.0,
-              600.0, 550.0, 500.0, 450.0, 400.0,
-              350.0, 300.0, 250.0, 200.0, 150.0,
-              100.0,  70.0,  50.0,  30.0,  20.0,
-               10.0 ]
+# Variables to be set in this script readed in input_vars.txt
+with open('input_vars.py', 'r') as file:
+    # Evaluate each line as Python code and execute it
+    for line in file:
+        exec(line)
+        print(line)
+	
+
+@jit(parallel=True)
+def interpolate_and_save_fields(xtime, fields, pressure, nCells, levs, isobaric_fields, isobaric_fieldnames, fill_val):
+    """
+    Interpolates fields vertically and saves the interpolated fields
+    :param xtime: Array of time values
+    :param fields: Array of fields
+    :param pressure: Array of pressure values
+    :param nCells: Number of cells
+    :param levs: Array of pressure levels to interpolate to
+    :param isobaric_fieldnames: List of fields
+    :param isobaric_fieldnames: List of field names
+    :param fill_val: Fill value for out-of-range interpolation
+    """
+    
+    # Loop over times
+    for t in prange(len(xtime)):
+
+        # TODO
+        # timestring = xtime[t,0:19].tostring()
+        # print('Interpolating fields at time '+timestring.decode('utf-8'))
+
+        #
+        # Vertically interpolate
+        #
+        for iCell in prange(nCells):
+
+            i = 0
+            for field in fields:
+                # OLD - deprecated method, using scipy
+                #
+                # y = interp1d(pressure[t,iCell,:], field[t,iCell,:],
+                #            bounds_error=False, fill_value=fill_val)
+                # print(f'type y = {type(y)}')
+                # for lev in prange(len(levs)):
+                #   # print(f'y shape = {y(levs[lev]).shape}')
+                #   # print(f'y = {y(levs[lev])}')
+                #   # print(f'y type = {type( y(levs[lev]) )}')
+                #   isobaric_fields[i][iCell] = y(levs[lev])
+                #   i = i + 1
+
+                # NEW -using np.interp - linear
+                # TODO fix . check x_in, y_in dimensions
+		
 
 
-#
-# Set list of fields, each of which must be dimensioned
-# by ('Time', 'nCells', 'nVertLevels')
-#
-field_names = [ 'uReconstructZonal', 'uReconstructMeridional' ]
+                # Handle out-of-range values manually
+                x_in = pressure[t, iCell, :]
+                y_in = field[t, iCell, :]
+                x_min = x_in[0]
+                x_max = x_in[-1]
+                y_min = y_in[0]
+                y_max = y_in[-1]
+                
+                for lev in prange(len(levs)):
+                    if levs[lev] < x_min:
+                        isobaric_fields[i][iCell, lev] = fill_val
+                    elif levs[lev] > x_max:
+                        isobaric_fields[i][iCell, lev] = fill_val
+                    else:
+                        isobaric_fields[i][iCell, lev] = np.interp(levs[lev], x_in, y_in)
+                    i += 1
 
 
-#
-# Set the fill value to be used for points that are below ground
-# or above the model top
-#
-fill_val = -1.0e30
+                # Perform linear interpolation using np.interp
+                #y = np.interp(levs, pressure[t, iCell, :], field[t, iCell, :])
+                #for lev in prange(len(levs)):
+                #    isobaric_fields[i][iCell, lev] = y[lev]
+                #    i += 1
+		
+		
+                #
+                # Perform interpolation along the z-dimension
+                #interp_func = np.interp  # linear
+                #x_in = pressure[t, iCell, :]
+                #y_in = field[t, iCell, :]
+                #y = interp_func(x_in, x_in, y_in,
+                #                       left=fill_val, right=fill_val)  # Specify how to handle out-of-range values
+                # TODO isobaric_fields[:][iCell] = y[:]
+                #for lev in range(len(levs)):
+                #    print(f'y shape = {y.shape}')
+                #    print(f'y = {y[i]}')
+                #    print(f'y type = {type(y[i])}')
+                #    isobaric_fields[i][iCell] = y[i]
+                #    i = i + 1
+                #exit(0)
+
+    return isobaric_fields		    
+	    
+
+def main():
 
 
-#
-# Read 3-d pressure, zonal wind, and meridional wind fields
-# on model zeta levels
-#
-f = Dataset(filename)
+    if len(sys.argv) < 2 or len(sys.argv) > 3:
+        print('')
+        print('Usage: isobaric_interp.py <input filename> [output filename]')
+        print('')
+        print('       Where <input filename> is the name of an MPAS-Atmosphere netCDF file')
+        print('       containing a 3-d pressure field as well as all 3-d fields to be vertically')
+        print('       interpolated to isobaric levels, and [output filename] optionally names')
+        print('       the output file to be written with vertically interpolated fields.')
+        print('')
+        print('       If an output filename is not given, interpolated fields will be written')
+        print('       to a file named isobaric.nc.')
+        print('')
+        exit()
 
-nCells = f.dimensions['nCells'].size
-nVertLevels = f.dimensions['nVertLevels'].size
+    filename = sys.argv[1]
+    if len(sys.argv) == 3:
+        outfile = sys.argv[2]
+    else:
+        outfile = 'isobaric.nc'
 
-pressure = f.variables['pressure'][:]
+    # Read 3-d pressure, zonal wind, and meridional wind fields
+    # on model zeta levels
+    f_in = Dataset(filename)
 
-xtime = f.variables['xtime'][:]
+    nCells = f_in.dimensions['nCells'].size
+    nVertLevels = f_in.dimensions['nVertLevels'].size
 
-fields = []
-for field in field_names:
-    fields.append(f.variables[field][:])
+    pressure = f_in.variables['pressure'][:]
+    pressure = np.array(pressure)  # avoids problems in jit
 
-f.close()
+    xtime = f_in.variables['xtime'][:]
+    xtime = np.array(xtime)
 
+    fields = []
+    for field in field_names:
+        field_np = np.array(f_in.variables[field][:])
+        fields.append(field_np)
 
-#
-# Convert pressure from Pa to hPa
-#
-pressure = pressure * 0.01
+    f_in.close()
 
+    # Convert pressure from Pa to hPa
+    pressure = pressure * 0.01
 
-#
-# Compute logarithm of isobaric level values and 3-d pressure field
-#
-pressure = np.log(pressure)
-levs = np.log(levs_hPa)
+    # Compute logarithm of isobaric level values and 3-d pressure field
+    pressure = np.log(pressure)
+   
+    levs = np.log(levs_hPa)
 
+    # Allocate list of output fields
+    isobaric_fields = []
+    isobaric_fieldnames = []
+    for field in field_names:
+        for lev in levs_hPa:
+            isobaric_fields.append(np.zeros((nCells)))
+            isobaric_fieldnames.append(field+'_'+repr(round(lev))+'hPa')
 
-#
-# Allocate list of output fields
-#
-isobaric_fields = []
-isobaric_fieldnames = []
-for field in field_names:
-    for lev in levs_hPa:
-        isobaric_fields.append(np.zeros((nCells)))
-        isobaric_fieldnames.append(field+'_'+repr(round(lev))+'hPa')
+    # Create netCDF output file
+    f_out = Dataset(outfile, 'w', clobber=False)
 
+    f_out.createDimension('Time', size=None)
+    f_out.createDimension('nCells', size=nCells)
 
-#
-# Create netCDF output file
-#
-f = Dataset(outfile, 'w', clobber=False)
+    for field in isobaric_fieldnames:
+        f_out.createVariable(field, 'f', dimensions=('Time','nCells'), fill_value=fill_val)
+    
+    isobaric_fields = interpolate_and_save_fields(xtime, fields, pressure, nCells, levs, isobaric_fields, isobaric_fieldnames, fill_val)
 
-f.createDimension('Time', size=None)
-f.createDimension('nCells', size=nCells)
-
-for field in isobaric_fieldnames:
-    f.createVariable(field, 'f', dimensions=('Time','nCells'), fill_value=fill_val)
-
-
-#
-# Loop over times
-#
-for t in range(len(xtime)):
-
-    timestring = xtime[t,0:19].tostring()
-    print('Interpolating fields at time '+timestring.decode('utf-8'))
-
-    #
-    # Vertically interpolate
-    #
-    for iCell in range(nCells):
-
-        i = 0
-        for field in fields:
-            y = interp1d(pressure[t,iCell,:], field[t,iCell,:],
-                         bounds_error=False, fill_value=fill_val)
-            for lev in range(len(levs)):
-                isobaric_fields[i][iCell] = y(levs[lev])
-                i = i + 1
-
-
-    #
     # Save interpolated fields
-    #
-    for i in range(len(isobaric_fieldnames)):
-        f.variables[isobaric_fieldnames[i]][t,:] = isobaric_fields[i][:]
+    # Loop over times
+    for t in range(len(xtime)): 
+        for i in range(len(isobaric_fieldnames)):
+            f_out.variables[isobaric_fieldnames[i]][t,:] = isobaric_fields[i][:]
 
-f.close()
+    f_out.close()
 
+if __name__ == "__main__":
+    main()

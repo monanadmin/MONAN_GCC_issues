@@ -3,7 +3,7 @@
 #SBATCH --nodes=1
 #SBATCH --partition=batch
 #SBATCH --tasks-per-node=1                      # ic for benchmark
-#SBATCH --time=00:30:00
+#SBATCH --time=02:00:00
 #SBATCH --output=./sbatch.o%j    # File name for standard output
 #SBATCH --error=./sbatch.e%j     # File name for standard error output
 #
