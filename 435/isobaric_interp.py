@@ -46,7 +46,7 @@ def interpolate_and_save_fields(xtime, fields, pressure, nCells, levs, isobaric_
     :param pressure: Array of pressure values
     :param nCells: Number of cells
     :param levs: Array of pressure levels to interpolate to
-    :param isobaric_fieldnames: List of fields
+    :param isobaric_fields: List of fields
     :param isobaric_fieldnames: List of field names
     :param fill_val: Fill value for out-of-range interpolation
     """
@@ -77,11 +77,9 @@ def interpolate_and_save_fields(xtime, fields, pressure, nCells, levs, isobaric_
                 #   isobaric_fields[i][iCell] = y(levs[lev])
                 #   i = i + 1
 
+
                 # NEW -using np.interp - linear
-                # TODO fix . check x_in, y_in dimensions
-		
-
-
+                #
                 # Handle out-of-range values manually
                 x_in = pressure[t, iCell, :]
                 y_in = field[t, iCell, :]
@@ -92,42 +90,18 @@ def interpolate_and_save_fields(xtime, fields, pressure, nCells, levs, isobaric_
                 
                 for lev in prange(len(levs)):
                     if levs[lev] < x_min:
-                        isobaric_fields[i][iCell, lev] = fill_val
+                        isobaric_fields[i][iCell] = fill_val
                     elif levs[lev] > x_max:
-                        isobaric_fields[i][iCell, lev] = fill_val
+                        isobaric_fields[i][iCell] = fill_val
                     else:
-                        isobaric_fields[i][iCell, lev] = np.interp(levs[lev], x_in, y_in)
+                        isobaric_fields[i][iCell] = np.interp(levs[lev], x_in, y_in)
                     i += 1
-
-
-                # Perform linear interpolation using np.interp
-                #y = np.interp(levs, pressure[t, iCell, :], field[t, iCell, :])
-                #for lev in prange(len(levs)):
-                #    isobaric_fields[i][iCell, lev] = y[lev]
-                #    i += 1
-		
-		
-                #
-                # Perform interpolation along the z-dimension
-                #interp_func = np.interp  # linear
-                #x_in = pressure[t, iCell, :]
-                #y_in = field[t, iCell, :]
-                #y = interp_func(x_in, x_in, y_in,
-                #                       left=fill_val, right=fill_val)  # Specify how to handle out-of-range values
-                # TODO isobaric_fields[:][iCell] = y[:]
-                #for lev in range(len(levs)):
-                #    print(f'y shape = {y.shape}')
-                #    print(f'y = {y[i]}')
-                #    print(f'y type = {type(y[i])}')
-                #    isobaric_fields[i][iCell] = y[i]
-                #    i = i + 1
-                #exit(0)
+                    #print(isobaric_fields[i][iCell])
 
     return isobaric_fields		    
 	    
 
 def main():
-
 
     if len(sys.argv) < 2 or len(sys.argv) > 3:
         print('')
@@ -171,7 +145,6 @@ def main():
 
     # Convert pressure from Pa to hPa
     pressure = pressure * 0.01
-
     # Compute logarithm of isobaric level values and 3-d pressure field
     pressure = np.log(pressure)
    
