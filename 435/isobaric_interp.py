@@ -89,12 +89,12 @@ def interpolate_and_save_fields(xtime, fields, pressure, nCells, levs, isobaric_
                 y_max = y_in[-1]
                 
                 for lev in prange(len(levs)):
-                    if levs[lev] < x_min:
-                        isobaric_fields[i][iCell] = fill_val
-                    elif levs[lev] > x_max:
-                        isobaric_fields[i][iCell] = fill_val
-                    else:
-                        isobaric_fields[i][iCell] = np.interp(levs[lev], x_in, y_in)
+                    #if levs[lev] < x_min:
+                    #    isobaric_fields[i][iCell] = fill_val
+                    #elif levs[lev] > x_max:
+                    #    isobaric_fields[i][iCell] = fill_val
+                    #else:
+                    isobaric_fields[i][iCell] = np.interp(levs[lev], x_in, y_in)
                     i += 1
                     #print(isobaric_fields[i][iCell])
 
