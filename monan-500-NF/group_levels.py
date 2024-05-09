@@ -16,7 +16,7 @@ nc_file_in = nc.Dataset(f'{data_dir}/{file_in}', 'r')
 # Save the concatenated variables to a new NetCDF file
 nc_file_out = nc.Dataset(f'{data_dir}/{file_out}', 'w')
 
-dimensions_4D = ('Time', 'latitude', 'longitude', 'level')
+dimensions_4D = ('time', 'latitude', 'longitude', 'level')
 # Group variables based on their names
 variable_groups = {}
 first_hpa_variable = ''
@@ -38,7 +38,7 @@ level_dimension_size = len(variable_groups[first_hpa_variable])
 
 # Copy dimensions Time, latitude, longitude
 for dim_name, dim_type in nc_file_in.dimensions.items():
-    if dim_name in ['Time', 'latitude', 'longitude']:
+    if dim_name.lower() in ['time', 'latitude', 'longitude']:
         nc_file_out.createDimension(dim_name, dim_type.size)
 # Create level dimension
 nc_file_out.createDimension('level', level_dimension_size)
